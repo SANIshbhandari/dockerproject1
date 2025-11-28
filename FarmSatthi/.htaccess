@@ -1,0 +1,30 @@
+# Set default file
+DirectoryIndex index.php
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Protect hidden files (Apache 2.4+ syntax)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Prevent access to config files (Apache 2.4+ syntax)
+<FilesMatch "(database\.php|config\.php)$">
+    Require all denied
+</FilesMatch>
+
+# PHP Security Settings (mod_php not used in WAMP PHP 8, but harmless)
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log /tmp/php_errors.log
+</IfModule>
