@@ -157,15 +157,15 @@ if ($reportType === 'dashboard') {
         </tr>
         <tr>
             <td>Total Income</td>
-            <td style="color:#28a745;font-weight:bold;">रू ' . number_format($total_income, 2) . '</td>
+            <td style="color:#28a745;font-weight:bold;">Rs. ' . number_format($total_income, 2) . '</td>
         </tr>
         <tr>
             <td>Total Expenses</td>
-            <td style="color:#dc3545;font-weight:bold;">रू ' . number_format($total_expense, 2) . '</td>
+            <td style="color:#dc3545;font-weight:bold;">Rs. ' . number_format($total_expense, 2) . '</td>
         </tr>
         <tr style="background-color:#f8f9fa;">
             <td><strong>Net Profit/Loss</strong></td>
-            <td style="color:' . ($netProfit >= 0 ? '#28a745' : '#dc3545') . ';font-weight:bold;">रू ' . number_format($netProfit, 2) . '</td>
+            <td style="color:' . ($netProfit >= 0 ? '#28a745' : '#dc3545') . ';font-weight:bold;">Rs. ' . number_format($netProfit, 2) . '</td>
         </tr>
         <tr>
             <td>Profit Margin</td>
@@ -205,12 +205,12 @@ if ($reportType === 'dashboard') {
     
     while ($crop = $crops->fetch_assoc()) {
         $html .= '<tr>
-            <td>' . htmlspecialchars($crop['crop_name'] ?? '') . '</td>
-            <td>' . htmlspecialchars($crop['crop_type'] ?? '') . '</td>
-            <td>' . number_format($crop['area_hectares'], 2) . '</td>
+            <td>' . htmlspecialchars($crop['crop_name'] ?? 'N/A') . '</td>
+            <td>' . htmlspecialchars($crop['crop_type'] ?? 'N/A') . '</td>
+            <td>' . number_format($crop['area_hectares'] ?? 0, 2) . '</td>
             <td>' . ($crop['expected_yield'] ? number_format($crop['expected_yield'], 0) : 'N/A') . '</td>
             <td>' . ($crop['actual_yield'] ? number_format($crop['actual_yield'], 0) : 'Pending') . '</td>
-            <td>' . ucfirst($crop['status']) . '</td>
+            <td>' . ucfirst($crop['status'] ?? 'N/A') . '</td>
         </tr>';
     }
     
@@ -247,9 +247,9 @@ if ($reportType === 'dashboard') {
     
     while ($expense = $expenses->fetch_assoc()) {
         $html .= '<tr>
-            <td>' . htmlspecialchars($expense['category'] ?? '') . '</td>
-            <td align="center">' . $expense['count'] . '</td>
-            <td>रू ' . number_format($expense['total'], 2) . '</td>
+            <td>' . htmlspecialchars($expense['category'] ?? 'Uncategorized') . '</td>
+            <td align="center">' . ($expense['count'] ?? 0) . '</td>
+            <td>Rs. ' . number_format($expense['total'] ?? 0, 2) . '</td>
         </tr>';
     }
     
@@ -288,13 +288,13 @@ if ($reportType === 'dashboard') {
             </tr>';
         
         while ($animal = $livestock->fetch_assoc()) {
-            $statusColor = $animal['status'] === 'active' ? '#28a745' : ($animal['status'] === 'sold' ? '#ffc107' : '#dc3545');
+            $statusColor = ($animal['status'] ?? 'active') === 'active' ? '#28a745' : (($animal['status'] ?? '') === 'sold' ? '#ffc107' : '#dc3545');
             $html .= '<tr>
-                <td>' . htmlspecialchars($animal['animal_type'] ?? '') . '</td>
-                <td>' . htmlspecialchars($animal['breed'] ?? '') . '</td>
-                <td align="center"><strong>' . $animal['total_count'] . '</strong></td>
-                <td align="center">' . $animal['records'] . '</td>
-                <td style="color:' . $statusColor . ';"><strong>' . ucfirst($animal['status']) . '</strong></td>
+                <td>' . htmlspecialchars($animal['animal_type'] ?? 'N/A') . '</td>
+                <td>' . htmlspecialchars($animal['breed'] ?? 'N/A') . '</td>
+                <td align="center"><strong>' . ($animal['total_count'] ?? 0) . '</strong></td>
+                <td align="center">' . ($animal['records'] ?? 0) . '</td>
+                <td style="color:' . $statusColor . ';"><strong>' . ucfirst($animal['status'] ?? 'N/A') . '</strong></td>
             </tr>';
         }
         
@@ -347,20 +347,20 @@ if ($reportType === 'dashboard') {
             $alertText = '';
             $alertColor = '#28a745';
             if ($stockLevel <= 1) {
-                $alertText = '🔴 CRITICAL - Reorder Now!';
+                $alertText = 'CRITICAL - Reorder Now!';
                 $alertColor = '#dc3545';
             } elseif ($stockLevel <= 1.5) {
-                $alertText = '🟡 LOW - Reorder Soon';
+                $alertText = 'LOW - Reorder Soon';
                 $alertColor = '#ffc107';
             } else {
-                $alertText = '🟢 OK';
+                $alertText = 'OK';
             }
             
             $html .= '<tr>
-                <td>' . htmlspecialchars($item['item_name'] ?? '') . '</td>
-                <td>' . ucfirst($item['item_type']) . '</td>
-                <td align="center"><strong>' . number_format($item['quantity'], 2) . ' ' . $item['unit'] . '</strong></td>
-                <td align="center">' . ($item['reorder_level'] ? number_format($item['reorder_level'], 2) . ' ' . $item['unit'] : 'Not set') . '</td>
+                <td>' . htmlspecialchars($item['item_name'] ?? 'N/A') . '</td>
+                <td>' . ucfirst($item['item_type'] ?? 'N/A') . '</td>
+                <td align="center"><strong>' . number_format($item['quantity'] ?? 0, 2) . ' ' . ($item['unit'] ?? '') . '</strong></td>
+                <td align="center">' . ($item['reorder_level'] ? number_format($item['reorder_level'], 2) . ' ' . ($item['unit'] ?? '') : 'Not set') . '</td>
                 <td style="color:' . $alertColor . ';"><strong>' . $alertText . '</strong></td>
             </tr>';
         }
@@ -413,14 +413,16 @@ if ($reportType === 'dashboard') {
         }
         
         foreach ($trendData as $month) {
-            $profit = $month['income'] - $month['expense'];
+            $income = $month['income'] ?? 0;
+            $expense = $month['expense'] ?? 0;
+            $profit = $income - $expense;
             $profitColor = $profit >= 0 ? '#28a745' : '#dc3545';
             
             $html .= '<tr>
-                <td>' . htmlspecialchars($month['month_label']) . '</td>
-                <td style="color:#28a745;"><strong>रू ' . number_format($month['income'], 2) . '</strong></td>
-                <td style="color:#dc3545;"><strong>रू ' . number_format($month['expense'], 2) . '</strong></td>
-                <td style="color:' . $profitColor . ';"><strong>रू ' . number_format($profit, 2) . '</strong></td>
+                <td>' . htmlspecialchars($month['month_label'] ?? 'N/A') . '</td>
+                <td style="color:#28a745;"><strong>Rs. ' . number_format($income, 2) . '</strong></td>
+                <td style="color:#dc3545;"><strong>Rs. ' . number_format($expense, 2) . '</strong></td>
+                <td style="color:' . $profitColor . ';"><strong>Rs. ' . number_format($profit, 2) . '</strong></td>
             </tr>';
         }
         
@@ -436,7 +438,7 @@ if ($reportType === 'dashboard') {
     $pdf->AddPage();
     $pdf->SetFont('helvetica', 'B', 16);
     $pdf->SetTextColor(45, 122, 62);
-    $pdf->Cell(0, 10, '💡 Smart Recommendations for Your Farm', 0, 1, 'C');
+    $pdf->Cell(0, 10, 'Smart Recommendations for Your Farm', 0, 1, 'C');
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('helvetica', '', 10);
     $pdf->Ln(5);
@@ -446,17 +448,17 @@ if ($reportType === 'dashboard') {
     // Financial recommendations
     if ($profitMargin < 20 && $profitMargin >= 0) {
         $recommendations[] = [
-            'title' => '📊 Improve Profit Margin',
+            'title' => 'Improve Profit Margin',
             'desc' => 'Your profit margin is ' . number_format($profitMargin, 1) . '%. Consider reducing operational costs or increasing crop yields to improve profitability. Target: 20%+ profit margin.'
         ];
     } elseif ($profitMargin < 0) {
         $recommendations[] = [
-            'title' => '⚠️ Address Losses Urgently',
+            'title' => 'Address Losses Urgently',
             'desc' => 'Your farm is operating at a loss. Review all expenses immediately, focus on high-value crops, and consider diversifying income sources.'
         ];
     } elseif ($profitMargin > 40) {
         $recommendations[] = [
-            'title' => '🎉 Excellent Performance!',
+            'title' => 'Excellent Performance!',
             'desc' => 'Outstanding profit margin of ' . number_format($profitMargin, 1) . '%! Consider reinvesting in farm expansion, modern equipment, or new crop varieties.'
         ];
     }
@@ -465,11 +467,11 @@ if ($reportType === 'dashboard') {
     $expenses->data_seek(0);
     if ($expenses->num_rows > 0) {
         $topExpense = $expenses->fetch_assoc();
-        $expensePercent = ($total_expense > 0) ? ($topExpense['total'] / $total_expense) * 100 : 0;
+        $expensePercent = ($total_expense > 0) ? (($topExpense['total'] ?? 0) / $total_expense) * 100 : 0;
         if ($expensePercent > 30) {
             $recommendations[] = [
-                'title' => '💰 High Expense Category',
-                'desc' => 'Your "' . $topExpense['category'] . '" expenses account for ' . number_format($expensePercent, 1) . '% of total costs. Look for bulk purchasing options or alternative suppliers to reduce costs.'
+                'title' => 'High Expense Category',
+                'desc' => 'Your "' . ($topExpense['category'] ?? 'Uncategorized') . '" expenses account for ' . number_format($expensePercent, 1) . '% of total costs. Look for bulk purchasing options or alternative suppliers to reduce costs.'
             ];
         }
     }
@@ -484,7 +486,7 @@ if ($reportType === 'dashboard') {
     
     if ($lowStockCount > 0) {
         $recommendations[] = [
-            'title' => '📦 Inventory Alert',
+            'title' => 'Inventory Alert',
             'desc' => 'You have ' . $lowStockCount . ' item(s) running low on stock. Reorder soon to avoid operational delays and potential production losses.'
         ];
     }
@@ -499,7 +501,7 @@ if ($reportType === 'dashboard') {
     
     if ($cropTypes < 3) {
         $recommendations[] = [
-            'title' => '🌱 Diversify Your Crops',
+            'title' => 'Diversify Your Crops',
             'desc' => 'You are growing ' . $cropTypes . ' crop type(s). Consider diversifying to 3-5 different crops to reduce risk, improve soil health, and increase overall income stability.'
         ];
     }
@@ -514,19 +516,19 @@ if ($reportType === 'dashboard') {
     
     if ($activeLivestock > 0) {
         $recommendations[] = [
-            'title' => '🐄 Livestock Health Monitoring',
+            'title' => 'Livestock Health Monitoring',
             'desc' => 'Maintain regular health check-ups for your ' . $activeLivestock . ' active livestock record(s). Schedule vaccinations and keep detailed production records for better management.'
         ];
     }
     
     // General recommendations
     $recommendations[] = [
-        'title' => '📱 Use Technology',
+        'title' => 'Use Technology',
         'desc' => 'Continue using FarmSaathi to track all farm activities. Regular data entry helps identify trends and make informed decisions.'
     ];
     
     $recommendations[] = [
-        'title' => '📅 Plan Ahead',
+        'title' => 'Plan Ahead',
         'desc' => 'Review this report monthly. Set goals for the next period and track your progress. Small improvements compound over time.'
     ];
     

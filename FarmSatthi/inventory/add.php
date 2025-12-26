@@ -56,10 +56,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($stmt->execute()) {
             $stmt->close();
-            setFlashMessage("Inventory item added successfully!", 'success');
-            redirect('index.php');
+            $itemLabel = $item_type === 'employee' ? 'Employee' : ($item_type === 'equipment' ? 'Equipment' : 'Supply');
+            setFlashMessage("$itemLabel added successfully!", 'success');
+            
+            // Redirect to appropriate page
+            if ($item_type === 'employee') {
+                redirect('employees.php');
+            } elseif ($item_type === 'equipment') {
+                redirect('equipment.php');
+            } else {
+                redirect('supplies.php');
+            }
         } else {
-            $errors[] = "Failed to add inventory item: " . $conn->error;
+            $errors[] = "Failed to add item: " . $conn->error;
             $stmt->close();
         }
     }
@@ -68,8 +77,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="form-container">
     <div class="form-header">
-        <h2>Add New Inventory Item</h2>
-        <a href="index.php" class="btn btn-outline">← Back to Inventory</a>
+        <h2>
+            <?php 
+            if ($default_type === 'employee') {
+                echo 'Add New Employee';
+            } elseif ($default_type === 'equipment') {
+                echo 'Add New Equipment';
+            } else {
+                echo 'Add New Supply';
+            }
+            ?>
+        </h2>
+        <a href="<?php echo $default_type === 'employee' ? 'employees.php' : ($default_type === 'equipment' ? 'equipment.php' : 'supplies.php'); ?>" class="btn btn-outline">← Back</a>
     </div>
 
     <?php if (!empty($errors)): ?>

@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="form-container">
     <div class="form-header">
-        <h2>💉 Add Health Record - <?php echo htmlspecialchars($animal['animal_tag']); ?></h2>
+        <h2>💉 Add Health Record - <?php echo htmlspecialchars($animal['animal_tag'] ?? ''); ?></h2>
         <a href="view.php?id=<?php echo $id; ?>" class="btn btn-outline">← Back</a>
     </div>
 
