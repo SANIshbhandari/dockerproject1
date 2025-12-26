@@ -1,6 +1,6 @@
 <?php
 $host = "db";  // service name from docker-compose
-$db   = "farm";
+$db   = "farm_management";
 $user = "sanish";
 $pass = "sanish123456";
 $port = "5432";
