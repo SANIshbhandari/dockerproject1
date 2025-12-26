@@ -1,11 +1,7 @@
 <?php
 session_start();
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/session.php';
-
-// Get database connection
-$conn = getDBConnection();
 
 // Redirect if already logged in
 if (isLoggedIn()) {
@@ -13,12 +9,13 @@ if (isLoggedIn()) {
 }
 
 $errors = [];
+$username = '';
 
 // Handle login form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = sanitizeInput($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-    
+
     // Validate inputs
     if (empty($username)) {
         $errors[] = "Username is required.";
@@ -26,17 +23,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($password)) {
         $errors[] = "Password is required.";
     }
-    
+
     // Authenticate user if no validation errors
     if (empty($errors)) {
         $user = authenticateUser($username, $password);
-        
+
         if ($user) {
             // Log the login activity
             logActivity('login', 'auth', 'User logged in successfully');
-            
+
+            // Create session
             createSession($user['id'], $user['username'], $user['role']);
+
+            // Set flash message
             setFlashMessage("Welcome back, " . $user['username'] . "!", 'success');
+
             redirect('../dashboard/index.php');
         } else {
             $errors[] = "Invalid username or password.";
@@ -52,7 +53,6 @@ $pageTitle = 'Login - FarmSaathi';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
-    <?php require_once __DIR__ . '/../config/config.php'; ?>
     <link rel="stylesheet" href="<?php echo asset('css/style.css'); ?>?v=<?php echo time(); ?>">
 </head>
 <body class="auth-page-centered">
@@ -93,7 +93,7 @@ $pageTitle = 'Login - FarmSaathi';
                             name="username" 
                             class="form-control" 
                             placeholder="Enter your username"
-                            value="<?php echo htmlspecialchars($username ?? ''); ?>"
+                            value="<?php echo htmlspecialchars($username); ?>"
                             required
                             autofocus
                         >

@@ -2,8 +2,9 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/database.php'; // make sure this returns a PDO connection
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/nepali_date.php';
 require_once __DIR__ . '/../auth/session.php';
@@ -58,12 +59,10 @@ $currentModule = $currentModule ?? '';
                 <li><a href="<?php echo url('dashboard/index.php'); ?>" class="<?php echo $currentModule === 'dashboard' ? 'active' : ''; ?>">Dashboard</a></li>
                 
                 <?php if ($_SESSION['role'] === 'admin'): ?>
-                    <!-- Admin Menu: User Management & Reports Only -->
                     <li><a href="<?php echo url('admin/users/index.php'); ?>" class="<?php echo $currentModule === 'users' ? 'active' : ''; ?>">User Management</a></li>
                     <li><a href="<?php echo url('admin/activity/index.php'); ?>" class="<?php echo $currentModule === 'activity' ? 'active' : ''; ?>">User Activity</a></li>
                     <li><a href="<?php echo url('reports/index.php'); ?>" class="<?php echo $currentModule === 'reports' ? 'active' : ''; ?>">Reports</a></li>
                 <?php else: ?>
-                    <!-- Manager Menu: Farm Operations -->
                     <li><a href="<?php echo url('crops/index.php'); ?>" class="<?php echo $currentModule === 'crops' ? 'active' : ''; ?>">🌾 Crops</a></li>
                     <li><a href="<?php echo url('livestock/index.php'); ?>" class="<?php echo $currentModule === 'livestock' ? 'active' : ''; ?>">🐄 Livestock</a></li>
                     <li><a href="<?php echo url('inventory/index.php'); ?>" class="<?php echo $currentModule === 'inventory' ? 'active' : ''; ?>">📦 Inventory</a></li>
